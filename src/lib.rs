@@ -90,7 +90,8 @@ impl Game {
         }
     }
     
-    fn get_piece(&self, position: &String) -> &Piece {
+    /// Return the piece at the position, if there is one
+    fn get_piece(&self, position: &String) -> Option<&Piece> {
         let mut positions = position.chars();
         let file = positions.next().unwrap();
         let rank = positions.next().unwrap();
@@ -104,7 +105,8 @@ impl Game {
             'g' => 6 as usize, 'G' => 6 as usize, 'h' => 7 as usize, 'H' => 7 as usize,
             _ => 8 as usize //why can this happen?
         }; 
-        self.board[rank_idx][file_idx].as_ref().unwrap()
+        let piece = self.board[rank_idx][file_idx].as_ref();
+            if piece.is_none() {return None;} else {return Some(piece.unwrap());}
     }
 
     /// If the current game state is InProgress and the move is legal, 
@@ -128,7 +130,12 @@ impl Game {
     /// 
     /// (optional) Don't forget to include en passent and castling.
     pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
-        None        
+        let piece = self.get_piece(&_postion);
+        None
+    }
+
+    fn pawn_moves(&self, position: &String) -> Option<Vec<String>> {
+        None
     }
 }
 
@@ -182,8 +189,9 @@ mod tests {
     #[test]
     fn get_piece() {
         let game = Game::new();
-        let position = "A1".to_string();
-        let icon = game.get_piece(&position).icon();
+        let position = "A4".to_string();
+        let piece = game.get_piece(&position);
+        let icon = if piece.is_none() {"*".to_string()} else {piece.unwrap().icon()};
         println!("\n\nPiece at {}: {}\n", position, icon);
     }
 }
