@@ -92,20 +92,8 @@ impl Game {
     
     /// Return the piece at the position, if there is one
     fn get_piece(&self, position: &String) -> Option<&Piece> {
-        let mut positions = position.chars();
-        let file = positions.next().unwrap();
-        let rank = positions.next().unwrap();
-
-        let rank_idx = (8 - rank.to_digit(10).unwrap()) as usize;
-
-        let file_idx = match file {
-            'a' => 0 as usize, 'A' => 0 as usize, 'b' => 1 as usize, 'B' => 1 as usize,
-            'c' => 2 as usize, 'C' => 2 as usize, 'd' => 3 as usize, 'D' => 3 as usize,
-            'e' => 4 as usize, 'E' => 4 as usize, 'f' => 5 as usize, 'F' => 5 as usize,
-            'g' => 6 as usize, 'G' => 6 as usize, 'h' => 7 as usize, 'H' => 7 as usize,
-            _ => 8 as usize //why can this happen?
-        }; 
-        let piece = self.board[rank_idx][file_idx].as_ref();
+        let coords = coords_from_position(position);
+        let piece = self.board[coords[1]][coords[0]].as_ref();
             if piece.is_none() {return None;} else {return Some(piece.unwrap());}
     }
 
@@ -131,7 +119,13 @@ impl Game {
     /// (optional) Don't forget to include en passent and castling.
     pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
         let piece = self.get_piece(&_postion);
-        None
+        if piece.is_none() {
+            return None
+        }
+        else {
+            None
+        }
+
     }
 
     fn pawn_moves(&self, position: &String) -> Option<Vec<String>> {
@@ -162,6 +156,21 @@ impl fmt::Debug for Game {
     }
 }
 
+fn coords_from_position(position: &String) -> [usize; 2]{
+        let mut positions = position.chars();
+        let file = positions.next().unwrap();
+        let rank = positions.next().unwrap();
+        let rank_idx = (8 - rank.to_digit(10).unwrap()) as usize;
+        let file_idx = match file {
+            'a' => 0 as usize, 'A' => 0 as usize, 'b' => 1 as usize, 'B' => 1 as usize,
+            'c' => 2 as usize, 'C' => 2 as usize, 'd' => 3 as usize, 'D' => 3 as usize,
+            'e' => 4 as usize, 'E' => 4 as usize, 'f' => 5 as usize, 'F' => 5 as usize,
+            'g' => 6 as usize, 'G' => 6 as usize, 'h' => 7 as usize, 'H' => 7 as usize,
+            _ => 8 as usize //why can this happen?
+        };
+        return [file_idx, rank_idx];
+}
+
 // --------------------------
 // ######### TESTS ##########
 // --------------------------
@@ -189,7 +198,7 @@ mod tests {
     #[test]
     fn get_piece() {
         let game = Game::new();
-        let position = "A4".to_string();
+        let position = "A1".to_string();
         let piece = game.get_piece(&position);
         let icon = if piece.is_none() {"*".to_string()} else {piece.unwrap().icon()};
         println!("\n\nPiece at {}: {}\n", position, icon);
