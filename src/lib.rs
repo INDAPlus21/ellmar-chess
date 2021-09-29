@@ -12,11 +12,13 @@ pub enum GameState {
  * - Write well structured and clean code!
  */
 
+ #[derive(Copy, Clone)]
 pub enum Color {
     White,
     Black
 }
 
+#[derive(Copy, Clone)]
 pub enum Piece {
     King(Color),
     Queen(Color),
@@ -71,30 +73,9 @@ impl Game {
                     Some(Piece::Knight(Color::Black)),
                     Some(Piece::Rook(Color::Black))
                 ],
-                [
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black)),
-                    Some(Piece::Pawn(Color::Black))
-                ],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White)),
-                    Some(Piece::Pawn(Color::White))
-                ],
+                [Some(Piece::Pawn(Color::Black)); 8],
+                [None; 8], [None; 8], [None; 8], [None; 8],
+                [Some(Piece::Pawn(Color::White)); 8],
                 [
                     Some(Piece::Rook(Color::White)),
                     Some(Piece::Knight(Color::White)),
@@ -107,6 +88,23 @@ impl Game {
                 ]
             ]
         }
+    }
+    
+    fn get_piece(&self, position: &String) -> &Piece {
+        let mut positions = position.chars();
+        let file = positions.next().unwrap();
+        let rank = positions.next().unwrap();
+
+        let rank_idx = (8 - rank.to_digit(10).unwrap()) as usize;
+
+        let file_idx = match file {
+            'a' => 0 as usize, 'A' => 0 as usize, 'b' => 1 as usize, 'B' => 1 as usize,
+            'c' => 2 as usize, 'C' => 2 as usize, 'd' => 3 as usize, 'D' => 3 as usize,
+            'e' => 4 as usize, 'E' => 4 as usize, 'f' => 5 as usize, 'F' => 5 as usize,
+            'g' => 6 as usize, 'G' => 6 as usize, 'h' => 7 as usize, 'H' => 7 as usize,
+            _ => 8 as usize //why can this happen?
+        }; 
+        self.board[rank_idx][file_idx].as_ref().unwrap()
     }
 
     /// If the current game state is InProgress and the move is legal, 
@@ -129,23 +127,8 @@ impl Game {
     /// new positions of that piece. Don't forget to the rules for check. 
     /// 
     /// (optional) Don't forget to include en passent and castling.
-//     pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
-    pub fn get_possible_moves(&self, _postion: String) -> &Piece {
-        // get piece at position
-        let mut positions = _postion.chars();
-        let file = positions.next().unwrap();
-        let rank = positions.next().unwrap();
-
-        let rank_idx = (8 - rank.to_digit(10).unwrap()) as usize;
-
-        let file_idx = match file {
-            'a' => 0 as usize, 'A' => 0 as usize, 'b' => 1 as usize, 'B' => 1 as usize,
-            'c' => 2 as usize, 'C' => 2 as usize, 'd' => 3 as usize, 'D' => 3 as usize,
-            'e' => 4 as usize, 'E' => 4 as usize, 'f' => 5 as usize, 'F' => 5 as usize,
-            'g' => 6 as usize, 'G' => 6 as usize, 'h' => 7 as usize, 'H' => 7 as usize,
-            _ => 8 as usize //why can this happen?
-        }; 
-        let piece = self.board[rank_idx][file_idx].as_ref().unwrap();
+    pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
+        None        
     }
 }
 
@@ -194,5 +177,13 @@ mod tests {
         let game = Game::new();
         println!("{:?}", game);
         assert_eq!(game.get_game_state(), GameState::InProgress);
+    }
+    
+    #[test]
+    fn get_piece() {
+        let game = Game::new();
+        let position = "A1".to_string();
+        let icon = game.get_piece(&position).icon();
+        println!("\n\nPiece at {}: {}\n", position, icon);
     }
 }
