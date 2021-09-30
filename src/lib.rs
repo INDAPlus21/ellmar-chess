@@ -181,8 +181,32 @@ impl Game {
         }
         // diagnonal move possible if tile occupied
 
+        // Is there a better way?
         for pos in diagonal_moves {
-            if !self.get_piece(pos).is_none() {string_positions.push(pos_to_string(pos))}
+            if !self.get_piece(pos).is_none() {
+                if !iswhite {
+                    match piece {
+                        Piece::Bishop(Color::White) => string_positions.push(pos_to_string(pos)),
+                        Piece::Pawn(Color::White) => string_positions.push(pos_to_string(pos)),
+                        Piece::King(Color::White) => string_positions.push(pos_to_string(pos)),
+                        Piece::Queen(Color::White) => string_positions.push(pos_to_string(pos)),
+                        Piece::Rook(Color::White) => string_positions.push(pos_to_string(pos)),
+                        Piece::Knight(Color::White) => string_positions.push(pos_to_string(pos)),
+                        _ => ()
+                    }
+                }
+                else {
+                    match piece {
+                        Piece::Bishop(Color::Black) => string_positions.push(pos_to_string(pos)),
+                        Piece::Pawn(Color::Black) => string_positions.push(pos_to_string(pos)),
+                        Piece::King(Color::Black) => string_positions.push(pos_to_string(pos)),
+                        Piece::Queen(Color::Black) => string_positions.push(pos_to_string(pos)),
+                        Piece::Rook(Color::Black) => string_positions.push(pos_to_string(pos)),
+                        Piece::Knight(Color::Black) => string_positions.push(pos_to_string(pos)),
+                        _ => ()
+                    }
+                }
+            }
         }
         return Some(string_positions);
     }
