@@ -12,13 +12,13 @@ pub enum GameState {
  * - Write well structured and clean code!
  */
 
- #[derive(Copy, Clone)]
+ #[derive(Copy, Clone, PartialEq)]
 pub enum Color {
     White,
     Black
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Piece {
     King(Color),
     Queen(Color),
@@ -91,8 +91,7 @@ impl Game {
     }
     
     /// Return the piece at the position, if there is one
-    fn get_piece(&self, position: &String) -> Option<&Piece> {
-        let coords = coords_from_position(position);
+    fn get_piece(&self, coords: [usize; 2]) -> Option<&Piece> {
         let piece = self.board[coords[1]][coords[0]].as_ref();
             if piece.is_none() {return None;} else {return Some(piece.unwrap());}
     }
@@ -118,18 +117,74 @@ impl Game {
     /// 
     /// (optional) Don't forget to include en passent and castling.
     pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
-        let piece = self.get_piece(&_postion);
+        let piece = self.get_piece(pos_from_string(&_postion));
         if piece.is_none() {
             return None
         }
         else {
-            None
+            match piece.unwrap() {
+                Piece::Pawn(_) => return self.pawn_possible(&_postion),
+                _ => return None
+            }
+        }
+    }
+    
+    fn pawn_possible(&self, position: &String) -> Option<Vec<String>> {
+        let coords = pos_from_string(position);
+        let piece = self.get_piece(pos_from_string(position)).unwrap();
+        let iswhite = piece == &Piece::Pawn(Color::White);
+        let mut string_positions = vec!();
+        let mut diagonal_moves = vec!();
+
+        // return None if piece at edge of board
+        if coords[1] == 0 || coords[1] == 7 {return None;}
+
+        // 1 tile forward
+        let mut possible_positions = if iswhite {
+            vec!([coords[0], coords[1]-1])
+        }
+        else {
+            vec!([coords[0], coords[1]+1])
+        };
+
+        // 2 tiles forward
+        if iswhite && self.get_piece([coords[0], coords[1]-1]).is_none() {
+            possible_positions.push([coords[0], coords[1]-2]);
+        }
+        else if !iswhite && self.get_piece([coords[0], coords[1]+1]).is_none() {
+            possible_positions.push([coords[0], coords[1]+2])
+        }
+        
+        // remove occupied positions
+        for position in possible_positions {
+            if self.get_piece(position).is_none() {
+                string_positions.push(pos_to_string(position));
+            }
         }
 
-    }
+        // diagonal moves if piece not at edge of board
+        if iswhite {
+            if coords[0] > 0 {
+                diagonal_moves.push([coords[0]-1, coords[1]-1]);
+            }
+            if coords[0] < 7 {
+                diagonal_moves.push([coords[0]+1, coords[1]-1]);
+            }
+        else {
+            if coords[0] > 0 {
+                diagonal_moves.push([coords[0]+1, coords[1]+1]);
+            }
+            if coords[0] < 7 {
+                diagonal_moves.push([coords[0]+1, coords[1]+1]);
+            }
+        }
+        }
+        // diagnonal move possible if tile occupied
 
-    fn pawn_moves(&self, position: &String) -> Option<Vec<String>> {
-        None
+        for pos in diagonal_moves {
+            if !self.get_piece(pos).is_none() {string_positions.push(pos_to_string(pos))}
+        }
+        return Some(string_positions);
     }
 }
 
@@ -156,7 +211,7 @@ impl fmt::Debug for Game {
     }
 }
 
-fn coords_from_position(position: &String) -> [usize; 2]{
+fn pos_from_string(position: &String) -> [usize; 2]{
         let mut positions = position.chars();
         let file = positions.next().unwrap();
         let rank = positions.next().unwrap();
@@ -171,6 +226,20 @@ fn coords_from_position(position: &String) -> [usize; 2]{
         return [file_idx, rank_idx];
 }
 
+fn pos_to_string(coords: [usize; 2]) -> String {
+    let mut position = "".to_string();
+    let rank = 8 - coords[1];
+    position.push_str(
+        match coords[0] {
+            0 => "a", 1 => "b", 2 => "c", 3 => "d",
+            4 => "e", 5 => "f", 6 => "g", 7 => "h",
+            _ => "i"
+        }
+    );
+    position.push_str(&(rank).to_string());
+    return position;
+}
+
 // --------------------------
 // ######### TESTS ##########
 // --------------------------
@@ -179,6 +248,7 @@ fn coords_from_position(position: &String) -> [usize; 2]{
 mod tests {
     use super::Game;
     use super::GameState;
+    use super::pos_from_string;
 
     // check test framework
     #[test]
@@ -198,9 +268,20 @@ mod tests {
     #[test]
     fn get_piece() {
         let game = Game::new();
-        let position = "A1".to_string();
-        let piece = game.get_piece(&position);
+        let position = &"A1".to_string();
+        let piece = game.get_piece(pos_from_string(position));
         let icon = if piece.is_none() {"*".to_string()} else {piece.unwrap().icon()};
         println!("\n\nPiece at {}: {}\n", position, icon);
+    }
+    
+    #[test]
+    fn possib_moves() {
+        let game = Game::new();
+        let position = "A2".to_string().to_owned();
+        let possible_moves = game.get_possible_moves(position).unwrap();
+        println!();
+        for pos in possible_moves {
+            println!("{}", pos);
+        }
     }
 }
