@@ -137,11 +137,96 @@ impl Game {
             match piece.unwrap() {
                 Piece::Pawn(_) => return self.pawn_possible(&_postion),
                 Piece::Rook(_) => return self.rook_possible(&_postion),
+                Piece::Bishop(_) => return self.bishop_possible(&_postion),
                 _ => return None
             }
         }
     }
     
+    fn bishop_possible(&self, position: &String) -> Option<Vec<String>> {
+        let coords = pos_from_string(position);
+        let piece = self.get_piece(coords).unwrap();
+        let iswhite = piece.iswhite();
+        let mut string_positions = vec!();
+        let mut new_coords: [usize; 2];
+        let mut other_piece: Option<&Piece>;
+        let mut x: usize;
+        let mut y: usize;
+        
+        x = 0;
+        y = 0;
+        while x + coords[0] < 7 && y + coords[1] < 7{
+            x += 1;
+            y += 1;
+            new_coords = [coords[0]+x, coords[1]+y];
+            other_piece = self.get_piece(new_coords);
+            if !other_piece.is_none() {
+                if other_piece.unwrap().iswhite() != iswhite {
+                    string_positions.push(pos_to_string(new_coords));
+                }
+                break;
+            }
+            else {
+                string_positions.push(pos_to_string(new_coords));
+            }
+        }
+
+        x = 0;
+        y = 0;
+        while coords[0] > 0 && coords[1] > 0 && coords[0] - x > 0 && coords[1] - y > 0 {
+            x += 1;
+            y += 1;
+            new_coords = [coords[0]-x, coords[1]-y];
+            other_piece = self.get_piece(new_coords);
+            if !other_piece.is_none() {
+                if other_piece.unwrap().iswhite() != iswhite {
+                    string_positions.push(pos_to_string(new_coords));
+                }
+                break;
+            }
+            else {
+                string_positions.push(pos_to_string(new_coords));
+            }
+        }
+
+        x = 0;
+        y = 0;
+        while coords[0] > 0 && coords[0] - x > 0 && y + coords[1] < 7{
+            x += 1;
+            y += 1;
+            new_coords = [coords[0]-x, coords[1]+y];
+            other_piece = self.get_piece(new_coords);
+            if !other_piece.is_none() {
+                if other_piece.unwrap().iswhite() != iswhite {
+                    string_positions.push(pos_to_string(new_coords));
+                }
+                break;
+            }
+            else {
+                string_positions.push(pos_to_string(new_coords));
+            }
+        }
+
+        x = 0;
+        y = 0;
+        while coords[1] > 0 && x + coords[0] < 7 && coords[1] - y > 0{
+            x += 1;
+            y += 1;
+            new_coords = [coords[0]+x, coords[1]-y];
+            other_piece = self.get_piece(new_coords);
+            if !other_piece.is_none() {
+                if other_piece.unwrap().iswhite() != iswhite {
+                    string_positions.push(pos_to_string(new_coords));
+                }
+                break;
+            }
+            else {
+                string_positions.push(pos_to_string(new_coords));
+            }
+        }
+        return if string_positions.len() > 0 {Some(string_positions)} else {None};
+    }
+
     fn rook_possible(&self, position: &String) -> Option<Vec<String>> {
         let coords = pos_from_string(position);
         let piece = self.get_piece(coords).unwrap();
@@ -155,13 +240,10 @@ impl Game {
             new_coords = [coords[0], coords[1]+idx];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
-                if other_piece.unwrap().iswhite() == iswhite {
-                    break;
-                }
-                else {
+                if other_piece.unwrap().iswhite() != iswhite {
                     string_positions.push(pos_to_string(new_coords));
-                    break;
                 }
+                break;
             }
             else {
                 string_positions.push(pos_to_string(new_coords));
@@ -170,17 +252,14 @@ impl Game {
         }
 
         idx = 1;
-        while coords[1] > 0 && coords[1]-idx > 0 {
+        while coords[1] > 0 && coords[1]-idx >= 0 {
             new_coords = [coords[0], coords[1]-idx];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
-                if other_piece.unwrap().iswhite() == iswhite {
-                    break;
-                }
-                else {
+                if other_piece.unwrap().iswhite() != iswhite {
                     string_positions.push(pos_to_string(new_coords));
-                    break;
                 }
+                break;
             }
             else {
                 string_positions.push(pos_to_string(new_coords));
@@ -193,13 +272,10 @@ impl Game {
             new_coords = [coords[0]+idx, coords[1]];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
-                if other_piece.unwrap().iswhite() == iswhite {
-                    break;
-                }
-                else {
+                if other_piece.unwrap().iswhite() != iswhite {
                     string_positions.push(pos_to_string(new_coords));
-                    break;
                 }
+                break;
             }
             else {
                 string_positions.push(pos_to_string(new_coords));
@@ -208,17 +284,14 @@ impl Game {
         }
 
         idx = 1;
-        while coords[0] > 0 && coords[0]-idx > 0 {
+        while coords[0] > 0 && coords[0]-idx >= 0 {
             new_coords = [coords[0]-idx, coords[1]];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
-                if other_piece.unwrap().iswhite() == iswhite {
-                    break;
-                }
-                else {
+                if other_piece.unwrap().iswhite() != iswhite {
                     string_positions.push(pos_to_string(new_coords));
-                    break;
                 }
+                break;
             }
             else {
                 string_positions.push(pos_to_string(new_coords));
@@ -381,7 +454,7 @@ mod tests {
     #[test]
     fn possib_moves() {
         let game = Game::new();
-        let position = "A1".to_string().to_owned();
+        let position = "C1".to_string().to_owned();
         let possible_moves = game.get_possible_moves(position);
         if !possible_moves.is_none() {
             println!();
