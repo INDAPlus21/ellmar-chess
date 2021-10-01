@@ -288,8 +288,9 @@ impl Game {
         let mut idx: usize;
         let mut new_coords: [usize; 2];
         let mut other_piece: Option<&Piece>;
-        idx = 1;
+        idx = 0;
         while idx + coords[1] < 7 {
+            idx += 1;
             new_coords = [coords[0], coords[1]+idx];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
@@ -301,11 +302,11 @@ impl Game {
             else {
                 string_positions.push(pos_to_string(new_coords));
             }
-            idx += 1;
         }
 
-        idx = 1;
-        while coords[1] > 0 && coords[1]-idx >= 0 {
+        idx = 0;
+        while coords[1] > 0 && coords[1]-idx > 0 {
+            idx += 1;
             new_coords = [coords[0], coords[1]-idx];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
@@ -317,11 +318,11 @@ impl Game {
             else {
                 string_positions.push(pos_to_string(new_coords));
             }
-            idx += 1;
         }
 
-        idx = 1;
-        while idx + coords[0]+1 < 7 {
+        idx = 0;
+        while idx + coords[0] < 7 {
+            idx += 1;
             new_coords = [coords[0]+idx, coords[1]];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
@@ -333,11 +334,11 @@ impl Game {
             else {
                 string_positions.push(pos_to_string(new_coords));
             }
-            idx += 1;
         }
 
-        idx = 1;
-        while coords[0] > 0 && coords[0]-idx >= 0 {
+        idx = 0;
+        while coords[0] > 0 && coords[0]-idx > 0 {
+            idx += 1;
             new_coords = [coords[0]-idx, coords[1]];
             other_piece = self.get_piece(new_coords);
             if !other_piece.is_none() {
@@ -349,7 +350,6 @@ impl Game {
             else {
                 string_positions.push(pos_to_string(new_coords));
             }
-            idx += 1;
         }
         return if string_positions.len() > 0 {Some(string_positions)} else {None};
     }
@@ -507,7 +507,7 @@ mod tests {
     #[test]
     fn possib_moves() {
         let game = Game::new();
-        let position = "D1".to_string().to_owned();
+        let position = "E1".to_string().to_owned();
         let possible_moves = game.get_possible_moves(position);
         if !possible_moves.is_none() {
             println!();
