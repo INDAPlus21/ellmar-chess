@@ -87,8 +87,8 @@ impl Game {
                 ],
                 [Some(Piece::Pawn(Color::Black)); 8],
                 [None; 8], [None; 8], [None; 8], [None; 8],
-                [None; 8],
-//                [Some(Piece::Pawn(Color::White)); 8],
+//                [None; 8], //for testing
+                [Some(Piece::Pawn(Color::White)); 8],
                 [
                     Some(Piece::Rook(Color::White)),
                     Some(Piece::Knight(Color::White)),
@@ -141,11 +141,48 @@ impl Game {
                 Piece::Bishop(_) => return self.bishop_possible(&_postion),
                 Piece::Queen(_) => return self.queen_possible(&_postion),
                 Piece::King(_) => return self.king_possible(&_postion),
-                _ => return None
+                Piece::Knight(_) => return self.knight_possible(&_postion)
             }
         }
     }
     
+    fn knight_possible(&self, position: &String) -> Option<Vec<String>> {
+        let coords = pos_from_string(position);
+        let piece = self.get_piece(coords).unwrap();
+        let iswhite = piece.iswhite();
+        
+        let mut coords_usize: [usize; 2];
+        let mut other_piece: Option<&Piece>;
+        let mut string_positions = vec!();
+        let possible_positions = [
+            [coords[0] as i8 +2, coords[1] as i8 +1], [coords[0] as i8 +2, coords[1] as i8 -1],
+            [coords[0] as i8 -2, coords[1] as i8 +1], [coords[0] as i8 -2, coords[1] as i8 -1],
+            [coords[0] as i8 +1, coords[1]as i8 +2], [coords[0] as i8 -1, coords[1] as i8 +2],
+            [coords[0] as i8 +1, coords[1] as i8 -2], [coords[0] as i8 -1, coords[1] as i8 -2]
+        ];
+
+        for new_coords in possible_positions {
+            if 0 <= new_coords[0] && new_coords[0] <= 7 &&
+            0 <= new_coords[1] && new_coords[1] <= 7 {
+                coords_usize = [new_coords[0] as usize, new_coords[1] as usize];
+                other_piece = self.get_piece(coords_usize);
+                if other_piece.is_none() {
+                    string_positions.push(pos_to_string(coords_usize));
+                }
+                else if other_piece.unwrap().iswhite() != iswhite {
+                    string_positions.push(pos_to_string(coords_usize));
+                }
+            }
+        }
+
+        if string_positions.len() > 0 {
+            return Some(string_positions);
+        }
+        else {
+            return None;
+        }
+    }
+
     fn king_possible(&self, position: &String) -> Option<Vec<String>> {
         let coords = pos_from_string(position);
         let piece = self.get_piece(coords).unwrap();
@@ -498,7 +535,7 @@ mod tests {
     #[test]
     fn get_piece() {
         let game = Game::new();
-        let position = &"A1".to_string();
+        let position = &"B1".to_string();
         let piece = game.get_piece(pos_from_string(position));
         let icon = if piece.is_none() {"*".to_string()} else {piece.unwrap().icon()};
         println!("\n\nPiece at {}: {}\n", position, icon);
@@ -507,7 +544,7 @@ mod tests {
     #[test]
     fn possib_moves() {
         let game = Game::new();
-        let position = "E1".to_string().to_owned();
+        let position = "B1".to_string().to_owned();
         let possible_moves = game.get_possible_moves(position);
         if !possible_moves.is_none() {
             println!();
