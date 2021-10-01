@@ -87,7 +87,8 @@ impl Game {
                 ],
                 [Some(Piece::Pawn(Color::Black)); 8],
                 [None; 8], [None; 8], [None; 8], [None; 8],
-                [Some(Piece::Pawn(Color::White)); 8],
+                [None; 8],
+//                [Some(Piece::Pawn(Color::White)); 8],
                 [
                     Some(Piece::Rook(Color::White)),
                     Some(Piece::Knight(Color::White)),
@@ -138,8 +139,28 @@ impl Game {
                 Piece::Pawn(_) => return self.pawn_possible(&_postion),
                 Piece::Rook(_) => return self.rook_possible(&_postion),
                 Piece::Bishop(_) => return self.bishop_possible(&_postion),
+                Piece::Queen(_) => return self.queen_possible(&_postion),
                 _ => return None
             }
+        }
+    }
+    
+    fn queen_possible(&self, position: &String) -> Option<Vec<String>> {
+        let mut string_positions = vec!();
+        let bishop_moves = self.bishop_possible(position);
+        let rook_moves = self.rook_possible(position);
+
+        if !bishop_moves.is_none() {
+            string_positions.append(&mut bishop_moves.unwrap());
+        }
+        if !rook_moves.is_none() {
+            string_positions.append(&mut rook_moves.unwrap())
+        }
+        if string_positions.len() > 0 {
+            return Some(string_positions);
+        }
+        else {
+            return None
         }
     }
     
@@ -454,7 +475,7 @@ mod tests {
     #[test]
     fn possib_moves() {
         let game = Game::new();
-        let position = "C1".to_string().to_owned();
+        let position = "E1".to_string().to_owned();
         let possible_moves = game.get_possible_moves(position);
         if !possible_moves.is_none() {
             println!();
