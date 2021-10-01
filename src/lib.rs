@@ -140,12 +140,44 @@ impl Game {
                 Piece::Rook(_) => return self.rook_possible(&_postion),
                 Piece::Bishop(_) => return self.bishop_possible(&_postion),
                 Piece::Queen(_) => return self.queen_possible(&_postion),
+                Piece::King(_) => return self.king_possible(&_postion),
                 _ => return None
             }
         }
     }
     
+    fn king_possible(&self, position: &String) -> Option<Vec<String>> {
+        let coords = pos_from_string(position);
+        let piece = self.get_piece(coords).unwrap();
+        let iswhite = piece.iswhite();
+        let mut other_piece: Option<&Piece>;
+        let mut string_positions = vec!();
+        let possible_positions = [
+            [coords[0]+1, coords[1]], [coords[0]+1, coords[1]+1], [coords[0], coords[1]+1], [coords[0]-1, coords[1]],
+            [coords[0]-1, coords[1]-1], [coords[0], coords[1]-1], [coords[0]+1, coords[1]-1], [coords[0]-1, coords[1]+1]
+        ];
+        for new_coords in possible_positions {
+            if 0 <= new_coords[0] && new_coords[0] <= 7 &&
+            0 <= new_coords[1] && new_coords[1] <= 7 {
+                other_piece = self.get_piece(new_coords);
+                if other_piece.is_none() {
+                    string_positions.push(pos_to_string(new_coords));
+                }
+                else if other_piece.unwrap().iswhite() != iswhite {
+                    string_positions.push(pos_to_string(new_coords));
+                }
+            }
+        }
+        if string_positions.len() > 0 {
+            return Some(string_positions);
+        }
+        else {
+            return None;
+        }
+    }
+
     fn queen_possible(&self, position: &String) -> Option<Vec<String>> {
+        // Queen can move as bishop and rook
         let mut string_positions = vec!();
         let bishop_moves = self.bishop_possible(position);
         let rook_moves = self.rook_possible(position);
@@ -475,7 +507,7 @@ mod tests {
     #[test]
     fn possib_moves() {
         let game = Game::new();
-        let position = "E1".to_string().to_owned();
+        let position = "D1".to_string().to_owned();
         let possible_moves = game.get_possible_moves(position);
         if !possible_moves.is_none() {
             println!();
