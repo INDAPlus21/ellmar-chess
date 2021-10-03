@@ -28,6 +28,7 @@ pub enum Piece {
     Pawn(Color)
 }
 
+#[derive(Copy, Clone)]
 pub struct Game {
     /* save board, active colour, ... */
     state: GameState,
@@ -112,7 +113,43 @@ impl Game {
     /// If the current game state is InProgress and the move is legal, 
     /// move a piece and return the resulting state of the game.
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
-        None
+        if self.state != GameState::InProgress {
+            return None;
+        }
+        
+        let coords_from = pos_from_string(&_from);
+        let coords_to = pos_from_string(&_to);
+        let self_copy = self.to_owned();
+        let piece_from = self_copy.get_piece(coords_from);
+
+        if piece_from.is_none() {
+            return None;
+        }
+        if piece_from.unwrap().iswhite() && self.active == Color::White {
+            return None;
+        }
+        
+        let possible_moves = self.get_possible_moves(_from);
+        if possible_moves.is_none() {
+            return None;
+        }
+
+        for _move in possible_moves.clone().unwrap() {
+            println!("{}", _move);
+        }
+
+        // to is to string to avoid lowe/uppercase incompatability
+        if possible_moves.unwrap().contains(&pos_to_string(coords_to)) {
+            // Should it really be [1], [0]??
+            self.board[coords_from[1]][coords_from[0]] = None;
+            self.board[coords_to[1]][coords_to[0]] = Some(piece_from.unwrap().to_owned());
+        }
+        else {
+            return None;
+        }
+
+        
+        return Some(self.state);
     }
 
     /// Set the piece type that a peasant becames following a promotion.
@@ -150,7 +187,7 @@ impl Game {
         let coords = pos_from_string(position);
         let piece = self.get_piece(coords).unwrap();
         let iswhite = piece.iswhite();
-        
+
         let mut coords_usize: [usize; 2];
         let mut other_piece: Option<&Piece>;
         let mut string_positions = vec!();
@@ -552,5 +589,12 @@ mod tests {
                 println!("{}", pos);
             }
         }
+    }
+
+    #[test]
+    fn test_move() {
+        let mut game = Game::new();
+        game.make_move("B8".to_string(), "C6".to_string());
+        println!("{:?}", game);
     }
 }
